@@ -1,4 +1,16 @@
 services:
+  mongo:
+    image: mongo:7
+    container_name: imagesr_mongo
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     container_name: imagesr_redis
@@ -75,8 +87,15 @@ services:
       - /app/node_modules
     environment:
       - ML_SERVICE_URL=http://backend:8000
+      - MONGO_URI=mongodb://mongo:27017/imagesr
+      # Set JWT_SECRET in the root .env (or your shell) for stable sign-ins.
+      - JWT_SECRET=${JWT_SECRET:-}
+      - RATE_LIMIT_PER_MINUTE=${RATE_LIMIT_PER_MINUTE:-60}
     depends_on:
-      - backend
+      mongo:
+        condition: service_healthy
+      backend:
+        condition: service_started
     restart: unless-stopped
 
   frontend:
@@ -108,3 +127,4 @@ services:
 
 volumes:
   session_storage:
+  mongo_data:
