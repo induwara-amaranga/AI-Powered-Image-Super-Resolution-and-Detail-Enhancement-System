@@ -10,6 +10,8 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 RESULTS_DIR = "/tmp/imagesr/results"
 
 celery_app = Celery("imagesr", broker=REDIS_URL, backend=REDIS_URL)
+# Report STARTED so the UI can show "processing" instead of jumping from PENDING to SUCCESS.
+celery_app.conf.task_track_started = True
 
 _model = None
 _device = None

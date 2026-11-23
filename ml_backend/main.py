@@ -153,6 +153,59 @@ def get_result(job_id: str):
     )
 
 
+def _valid_uuid(value: str) -> bool:
+    try:
+        uuid.UUID(value)
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
+def _find_upload(upload_id: str):
+    for name in os.listdir(UPLOAD_DIR):
+        if os.path.splitext(name)[0] == upload_id:
+            return os.path.join(UPLOAD_DIR, name)
+    return None
+
+
+@app.get("/input/{upload_id}")
+def get_input(upload_id: str):
+    """Original uploaded image (used for history thumbnails and before/after)."""
+    if not _valid_uuid(upload_id):
+        raise HTTPException(status_code=400, detail="Invalid upload id.")
+    path = _find_upload(upload_id)
+    if not path:
+        raise HTTPException(status_code=404, detail="Upload not found.")
+    return FileResponse(path)
+
+
+@app.delete("/jobs/{job_id}")
+def delete_job(job_id: str, upload_id: str | None = None):
+    """Delete a job's files from the shared volume and forget its Celery result."""
+    if not _valid_uuid(job_id) or (upload_id and not _valid_uuid(upload_id)):
+        raise HTTPException(status_code=400, detail="Invalid id.")
+
+    removed = []
+    task = AsyncResult(job_id, app=celery_app)
+    if task.successful():
+        output_path = str(task.result)
+        results_root = os.path.realpath(RESULTS_DIR)
+        if os.path.realpath(output_path).startswith(results_root + os.sep) and os.path.exists(output_path):
+            os.remove(output_path)
+            removed.append(os.path.basename(output_path))
+
+    if upload_id:
+        path = _find_upload(upload_id)
+        if path:
+            os.remove(path)
+            removed.append(os.path.basename(path))
+
+    if task.ready():
+        task.forget()
+
+    return {"job_id": job_id, "removed": removed}
+
+
 @app.get("/health")
 def health():
     return {
