@@ -10,6 +10,7 @@
     "asynckit": "^0.4.0",
     "axios": "^1.16.0",
     "balanced-match": "^4.0.4",
+    "bcryptjs": "^2.4.3",
     "binary-extensions": "^2.3.0",
     "body-parser": "^2.2.2",
     "brace-expansion": "^5.0.6",
@@ -42,6 +43,7 @@
     "escape-html": "^1.0.3",
     "etag": "^1.8.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^7.4.1",
     "fill-range": "^7.1.1",
     "finalhandler": "^2.1.1",
     "follow-redirects": "^1.16.0",
@@ -67,6 +69,7 @@
     "is-glob": "^4.0.3",
     "is-number": "^7.0.0",
     "is-promise": "^4.0.0",
+    "jsonwebtoken": "^9.0.2",
     "kareem": "^3.3.0",
     "math-intrinsics": "^1.1.0",
     "media-typer": "^1.1.0",
@@ -133,14 +136,16 @@
     "whatwg-url": "^14.2.0",
     "wrappy": "^1.0.2"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-  "dev": "nodemon server.js"
-},
+    "dev": "nodemon server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "mongodb-memory-server": "^10.1.2"
+  }
 }
