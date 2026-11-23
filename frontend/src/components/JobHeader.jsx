@@ -24,7 +24,7 @@ export default function JobHeader({ jobId, filename, status }) {
         </h1>
       </div>
       <div className="flex gap-sm">
-        <span className="flex items-center gap-xs px-md py-xs bg-surface-container-high rounded-full border border-outline-variant/30">
+        <span className="flex items-center gap-xs px-md py-xs bg-white rounded-full border border-outline-variant/60 shadow-sm">
           <span className={`w-2 h-2 rounded-full ${styles.dot}`} />
           <span className={`font-label-xs text-label-xs ${styles.text}`}>
             {status}

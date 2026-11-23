@@ -14,12 +14,12 @@ export default function Toggle({ title, description, checked, onChange }) {
         aria-label={title}
         onClick={() => onChange(!checked)}
         className={`w-12 h-6 rounded-full relative flex items-center p-1 cursor-pointer transition-colors ${
-          checked ? 'bg-secondary-container' : 'bg-[#2A3561]'
+          checked ? 'bg-secondary-container' : 'bg-outline-variant'
         }`}
       >
         <div
           className={`w-4 h-4 rounded-full shadow-sm transition-all ${
-            checked ? 'ml-auto bg-white' : 'bg-on-surface-variant'
+            checked ? 'ml-auto bg-white' : 'bg-white'
           }`}
         />
       </button>

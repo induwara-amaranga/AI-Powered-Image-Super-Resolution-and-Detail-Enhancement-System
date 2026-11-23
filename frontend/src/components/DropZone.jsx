@@ -4,7 +4,7 @@ const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp']
 const FORMAT_TAGS = ['JPG', 'PNG', 'WEBP', 'BMP']
 const MAX_BYTES = 20 * 1024 * 1024
 
-export default function DropZone({ file, onFileSelect, error }) {
+export default function DropZone({ file, onFileSelect, onClear, error }) {
   const inputRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(null)
@@ -59,38 +59,65 @@ export default function DropZone({ file, onFileSelect, error }) {
         displayedError
           ? 'border-error/60'
           : isDragging
-          ? 'border-secondary'
-          : 'border-outline-variant/50 hover:border-secondary'
+          ? 'border-primary bg-primary-fixed/40'
+          : 'border-primary-fixed-dim hover:border-primary'
       }`}
     >
       <input
         ref={inputRef}
         type="file"
         accept={ACCEPTED.join(',')}
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        onChange={(e) => {
+          handleFile(e.target.files?.[0])
+          e.target.value = ''
+        }}
         className="hidden"
       />
 
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
+      <div className="absolute inset-0 opacity-[0.25] pointer-events-none bg-[radial-gradient(#c7d2fe_1px,transparent_1px)] [background-size:20px_20px]" />
 
       {previewUrl ? (
-        <img
-          src={previewUrl}
-          alt={file?.name ?? 'Preview'}
-          className="absolute inset-0 w-full h-full object-contain z-0"
-        />
+        <>
+          <img
+            src={previewUrl}
+            alt={file?.name ?? 'Preview'}
+            className="absolute inset-0 w-full h-full object-contain z-0 p-md"
+          />
+          <div className="absolute top-md left-md right-md z-20 flex items-center justify-between gap-sm">
+            <span className="truncate px-sm py-xs rounded-lg bg-white/90 backdrop-blur shadow-sm font-body-sm text-body-sm font-medium text-on-surface">
+              {file?.name} · {(file?.size / 1024 / 1024).toFixed(2)} MB
+            </span>
+            <div className="flex gap-xs shrink-0">
+              <span className="px-sm py-xs rounded-lg bg-white/90 backdrop-blur shadow-sm font-body-sm text-body-sm font-semibold text-primary">
+                Change
+              </span>
+              {onClear && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onClear()
+                  }}
+                  className="px-sm py-xs rounded-lg bg-white/90 backdrop-blur shadow-sm font-body-sm text-body-sm font-semibold text-error hover:bg-error-container"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+        </>
       ) : (
         <div className="flex flex-col items-center text-center max-w-sm z-10">
-          <div className="w-20 h-20 rounded-full bg-surface-container-high flex items-center justify-center mb-md group-hover:scale-110 transition-transform duration-500">
+          <div className="w-20 h-20 rounded-2xl btn-gradient flex items-center justify-center mb-md group-hover:scale-110 transition-transform duration-500">
             <span
-              className="material-symbols-outlined text-4xl text-secondary"
+              className="material-symbols-outlined text-4xl text-white"
               style={{ fontVariationSettings: "'FILL' 1" }}
             >
               cloud_upload
             </span>
           </div>
           <h2 className="font-headline-sm text-headline-sm mb-xs">
-            Drop an image here
+            Drop an image here, or click to browse
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant mb-md">
             JPG, PNG, WebP, or BMP up to 20 MB.
@@ -99,7 +126,7 @@ export default function DropZone({ file, onFileSelect, error }) {
             {FORMAT_TAGS.map((tag) => (
               <div
                 key={tag}
-                className="px-sm py-xs bg-surface-container-lowest rounded-lg border border-outline-variant/30 font-code-md text-label-xs text-outline"
+                className="px-sm py-xs bg-primary-fixed/50 rounded-lg border border-primary-fixed font-code-md text-label-xs text-primary"
               >
                 {tag}
               </div>
@@ -109,13 +136,13 @@ export default function DropZone({ file, onFileSelect, error }) {
       )}
 
       {displayedError && (
-        <div className="absolute bottom-md left-md right-md z-20 px-md py-sm rounded-lg bg-error-container/80 border border-error/40 text-error font-body-sm text-body-sm backdrop-blur-md">
+        <div className="absolute bottom-md left-md right-md z-20 px-md py-sm rounded-lg bg-error-container border border-error/40 text-error font-body-sm text-body-sm backdrop-blur-md">
           {displayedError}
         </div>
       )}
 
       <div className="absolute bottom-0 left-0 w-full h-1 bg-outline-variant/20">
-        <div className="h-full w-0 bg-secondary shadow-[0_0_10px_#5de6ff] transition-all duration-700" />
+        <div className="h-full w-0 bg-secondary  transition-all duration-700" />
       </div>
     </div>
   )

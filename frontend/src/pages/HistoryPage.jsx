@@ -1,292 +1,310 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { clearHistory, fetchJobs } from '../api/jobsApi.js'
+import { useAuth } from '../auth/AuthContext.jsx'
+import { UsageMeter, formatBytes, formatDate } from '../components/AccountBits.jsx'
 
-const JOBS = [
-  {
-    key: 'cyber_neon',
-    status: 'processing',
-    processingLabel: 'Neural Upscaling...',
-    progressPct: 66,
-    filename: 'cyber_neon_landscape_01.png',
-    scale: '4X',
-    date: 'Today, 2:14 PM',
-    meta: { icon: 'id_card', value: 'ID: #98221' },
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB_SU-v7m5XPFG5M_p3nzxltGaw5DnM4HqCCeQnsXP5J2yrZTXWKXQkJ37FSBfZP8Up-F_YoF5-WPuKcaer4CwugV88Kku5Wi-D1J_8TBpfCGAY6Dqo7aQkbODyGgM3lk9vC_SHJi9l7WYI0vnl5P7EFHy_38nxSC4m4GTDStKh9Ok8KOn44F9DBgJDsH4YmMFPZtnwZgSDfugRQ0kT-NawSuREA0yLxnclhhqOj6aCDefk7f2-oqHF7x3A-_-0akjuYBkJNHK22aU',
-  },
-  {
-    key: 'archviz',
-    status: 'completed',
-    filename: 'archviz_render_final.jpg', 
-    scale: '8X',
-    date: 'Nov 24, 11:05 AM',
-    meta: { icon: 'download', value: '42.5 MB' },
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAx9e_BpL OgtnTW80HVGYUXoPxlpPAYPshdpNKVcujrHphZDLjM4OT8HNV7xjfPq7xtxK-9uQoKKVy16vHcQ91oLVsQ8dNiUdGDrNP4Cwt67OiqwK-qMhfC9UjpR-2JKhz5kJSGowVe6liUstBMENvMmeNx4jY_7PwOAZYDDUTcKGBkra67lu7Ntd7uiIXci7KdJlOzV3pNIXfL_E0BuLDLdWLrDfm9-8w5yhTWUPI_2wDuXTQXrxkougMpAUKPJUwtJ0XrpqmgFiE',
-  },
-  
-  {
-    key: 'concept_car',
-    status: 'completed',
-    filename: 'concept_car_sketch_alt.png',
-    scale: '2X',
-    date: 'Nov 23, 09:22 PM',
-    meta: { icon: 'download', value: '12.8 MB' },
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAn_AWIU_jFnb6BMM8FwIHTHnoRN1FOfWlqEIRB7AIMviT68ObTrKdgsFDqY2v1Z0t4breuUOJn8yrA2FJzWLV5TpuCWic8KuyKERjEglAneX0EtQAq75wykzaAhwsRa1iFwR8_4BVHFbVzlw2Em3VtBa1eWdW0aWxZt91UXcw4zVsHa7n_qobQH7w3JJ8VEqWvY92JkW3F1bCXBfvHzLdHkdHZQ7cYwX2LWlQGxhQEC46xTIqhZg-C34m1bjko1P1mJN9ZnI7-x2o',
-  },
-  {
-    key: 'legacy',
-    status: 'failed',
-    filename: 'legacy_component_scan.raw',
-    scale: 'N/A',
-    errorMsg: 'Unsupported file format encountered during parsing.',
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAyaioiiDlfPSNnvVoxEmRKy0kmgQgJ3RlD3BllSMT3v3S0Z2dQdWBD4sNOTlq017vBfHsPbr7-RUOJeEwcipbHSubYiWeFp9GRasVJiAyeH2W8Xtb2f9p4uByGoAc9aCk2SmGkDbbjplk05wDe_EKmLpXvFz2vtKal8OtkieECr-FT-Mh__iJiGXYnNURwGP5RyzTqXoZzo8KlyOZqpzyOgh6zf-2wlQ-DTgmA8H2V0LdVDMYT8K3G0mUJBJwUqzlizORe0cPf6aU',
-  },
-  {
-    key: 'abstract_orb',
-    status: 'completed',
-    filename: 'abstract_orb_composition.png',
-    scale: '4X',
-    date: 'Nov 22, 02:44 PM',
-    meta: { icon: 'download', value: '31.2 MB' },
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCUvrBZs_0bIEIb79-SFTsh7b9kkJLALiWbY76Mpj2NDgE9RZI9vLetAlkpK8PObGwU08Y6fkGlB9zaAz6XGq5hO6qdG8kkgRCgLyKkctpGSSQDNl9JIiSsRqPaEXsnF3FSh8VNpikm_WLkWFeM83qDvYpuBaKA27ZIQbe4Lgbbx4qu4uKOclH9HRxO_zoBZD1-a25tPqD_ej1ZXnDY6iOsLPjfQMPEdRICubP2OpDYvKO1UyImw2sfV7-rWdxMhojoEwFGZqgNvmU',
-  },
-  {
-    key: 'ui_kit',
-    status: 'processing',
-    processingLabel: 'Enhancing Details...',
-    progressPct: 25,
-    filename: 'ui_kit_gradient_mesh.jpg',
-    scale: '2X',
-    date: 'Nov 22, 01:15 PM',
-    meta: { icon: 'id_card', value: 'ID: #98218' },
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuByhaseFa6hcgCtBND_XoInB9enFzT0m5uOxqcbEQsWcyzu1ZyWbBY58wX9Qej3nWrVc01aEQoWcnfUWx7mjqe2f-7HrncwfOOZElpCeB9CfWvSNL5U12_fn0FD2hWelrQAZsdpUgynL5TDzEi4gdENnBuZL9RaSr74uopWpCueyvgIezVBeVvEpNrFWgrJMxwHeVfvzogz3Y6oLaSroumcQEBZhsHEcecj3bn0sanAEkeDn54s1fqCQeIy0dmbcHUjJAWKNamc0iY',
-  },
+const STATUS_OPTIONS = [
+  { value: '', label: 'All statuses' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'queued', label: 'Queued' },
+  { value: 'failed', label: 'Failed' },
 ]
+const DATE_OPTIONS = [
+  { value: '', label: 'All time' },
+  { value: '7', label: 'Last 7 days' },
+  { value: '30', label: 'Last 30 days' },
+  { value: '90', label: 'Last 90 days' },
+]
+const PAGE_SIZE = 12
+
+const STATUS_CHIP = {
+  completed: { cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: 'check_circle', label: 'Completed' },
+  processing: { cls: 'bg-primary-fixed text-primary border-primary-fixed-dim', icon: 'sync', label: 'Processing' },
+  queued: { cls: 'bg-surface-container text-on-surface-variant border-outline-variant', icon: 'schedule', label: 'Queued' },
+  failed: { cls: 'bg-error-container text-error border-red-200', icon: 'error', label: 'Failed' },
+}
+
+function Thumb({ job }) {
+  const [broken, setBroken] = useState(false)
+  const src = job.status === 'completed' ? job.resultUrl : job.originalUrl
+  if (!src || broken) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center text-outline">
+        <span className="material-symbols-outlined text-4xl">image</span>
+      </div>
+    )
+  }
+  return (
+    <img
+      src={src}
+      alt={job.originalName}
+      loading="lazy"
+      onError={() => setBroken(true)}
+      className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+        job.status === 'completed' ? '' : 'opacity-60 grayscale'
+      }`}
+    />
+  )
+}
 
 function JobCard({ job }) {
-  if (job.status === 'processing') {
-    return (
-      <div className="glass-panel rounded-xl overflow-hidden inner-glow-border group cursor-pointer">
-        <div className="aspect-video relative scanline-effect bg-surface-container-low">
-          <img
-            src={job.img}
-            alt={job.filename}
-            className="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 transition-all duration-500"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-xs">
-              <span className="font-code-md text-label-xs text-secondary animate-pulse uppercase tracking-widest">
-                {job.processingLabel}
-              </span>
-              <div className="w-32 h-1 bg-outline-variant rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-primary to-secondary shadow-[0_0_10px_#5de6ff]"
-                  style={{ width: `${job.progressPct}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="p-md">
-          <div className="flex justify-between items-start mb-sm">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface truncate pr-md">
-              {job.filename}
-            </h3>
-            <span className="font-label-xs text-label-xs px-xs py-[2px] rounded bg-secondary/10 text-secondary border border-secondary/20 shrink-0">
-              {job.scale}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-md font-body-sm text-body-sm text-on-surface-variant">
-            <div className="flex items-center gap-xs">
-              <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-              {job.date}
-            </div>
-            <div className="flex items-center gap-xs">
-              <span className="material-symbols-outlined text-[18px]">{job.meta.icon}</span>
-              {job.meta.value}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (job.status === 'failed') {
-    return (
-      <div className="glass-panel rounded-xl overflow-hidden inner-glow-border group cursor-pointer">
-        <div className="aspect-video relative bg-surface-container-low">
-          <img
-            src={job.img}
-            alt={job.filename}
-            className="w-full h-full object-cover opacity-30 grayscale"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-error-container/20 backdrop-blur-md p-md rounded-xl border border-error/50 flex flex-col items-center">
-              <span className="material-symbols-outlined text-error text-[32px] mb-xs">error</span>
-              <span className="font-label-xs text-label-xs text-error font-bold uppercase tracking-widest">
-                Process Failed
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="p-md">
-          <div className="flex justify-between items-start mb-sm">
-            <h3 className="font-headline-sm text-headline-sm text-on-surface truncate pr-md">
-              {job.filename}
-            </h3>
-            <span className="font-label-xs text-label-xs px-xs py-[2px] rounded bg-error/10 text-error border border-error/20 shrink-0">
-              {job.scale}
-            </span>
-          </div>
-          <div className="flex items-center gap-xs font-body-sm text-body-sm text-error/80">
-            <span className="material-symbols-outlined text-[18px]">info</span>
-            {job.errorMsg}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+  const chip = STATUS_CHIP[job.status] ?? STATUS_CHIP.queued
   return (
-    <div className="glass-panel rounded-xl overflow-hidden inner-glow-border group cursor-pointer">
-      <div className="aspect-video relative bg-surface-container-low">
-        <img
-          src={job.img}
-          alt={job.filename}
-          className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
-        />
-        <div className="absolute top-sm right-sm">
-          <div className="bg-surface-container-lowest/90 backdrop-blur-sm p-xs rounded-lg border border-outline-variant/30 text-on-surface">
-            <span className="material-symbols-outlined text-[20px]">check_circle</span>
+    <Link
+      to={`/job/${job.jobId}`}
+      className="glass-panel rounded-xl overflow-hidden group block hover:-translate-y-0.5 transition-transform"
+    >
+      <div className="aspect-video relative bg-surface-container overflow-hidden">
+        <Thumb job={job} />
+        <span
+          className={`absolute top-sm left-sm inline-flex items-center gap-1 rounded-full border px-sm py-0.5 text-[12px] font-semibold bg-white/95 ${chip.cls}`}
+        >
+          <span className={`material-symbols-outlined text-[14px] ${job.status === 'processing' ? 'animate-spin' : ''}`}>
+            {chip.icon}
+          </span>
+          {chip.label}
+        </span>
+        {(job.status === 'queued' || job.status === 'processing') && (
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-primary-fixed overflow-hidden">
+            <div className="h-full w-1/3 bg-gradient-to-r from-primary to-secondary-container animate-pulse" />
           </div>
-        </div>
+        )}
       </div>
       <div className="p-md">
-        <div className="flex justify-between items-start mb-sm">
-          <h3 className="font-headline-sm text-headline-sm text-on-surface truncate pr-md">
-            {job.filename}
-          </h3>
-          <span className="font-label-xs text-label-xs px-xs py-[2px] rounded bg-secondary/10 text-secondary border border-secondary/20 shrink-0">
-            {job.scale}
+        <div className="flex justify-between items-start gap-sm mb-sm">
+          <h3 className="font-body-lg text-body-lg font-semibold text-on-surface truncate">{job.originalName}</h3>
+          <span className="font-label-xs text-label-xs px-xs py-[3px] rounded bg-primary-fixed text-primary border border-primary-fixed-dim shrink-0">
+            {job.scale}X
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-md font-body-sm text-body-sm text-on-surface-variant">
-          <div className="flex items-center gap-xs">
-            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-            {job.date}
+        {job.status === 'failed' ? (
+          <p className="font-body-sm text-body-sm text-error line-clamp-2">{job.error || 'Processing failed.'}</p>
+        ) : (
+          <div className="flex justify-between font-body-sm text-body-sm text-on-surface-variant">
+            <span className="flex items-center gap-1">
+              <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+              {formatDate(job.createdAt, true)}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="material-symbols-outlined text-[16px]">
+                {job.processingTime != null ? 'timer' : 'description'}
+              </span>
+              {job.processingTime != null ? `${job.processingTime}s` : formatBytes(job.fileSize)}
+            </span>
           </div>
-          <div className="flex items-center gap-xs">
-            <span className="material-symbols-outlined text-[18px]">{job.meta.icon}</span>
-            {job.meta.value}
-          </div>
-        </div>
+        )}
       </div>
-    </div>
+    </Link>
   )
 }
 
 export default function HistoryPage() {
+  const { usage, plan, refresh } = useAuth()
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All Statuses')
-  const [dateFilter, setDateFilter] = useState('Last 7 days')
+  const [query, setQuery] = useState('')
+  const [status, setStatus] = useState('')
+  const [days, setDays] = useState('')
+  const [page, setPage] = useState(1)
+  const [data, setData] = useState(null)
+  const [error, setError] = useState(null)
+  const [clearing, setClearing] = useState(false)
 
-  const filtered = JOBS.filter((job) => {
-    const matchesSearch =
-      search === '' || job.filename.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus =
-      statusFilter === 'All Statuses' ||
-      job.status === statusFilter.toLowerCase()
-    return matchesSearch && matchesStatus
-  })
+  // Debounce the search box.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setQuery(search.trim())
+      setPage(1)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [search])
+
+  const load = useCallback(async () => {
+    try {
+      setError(null)
+      setData(await fetchJobs({ page, limit: PAGE_SIZE, status, q: query, days }))
+    } catch (e) {
+      setError(e.message)
+    }
+  }, [page, status, query, days])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  // While jobs are running, refresh the list so statuses update.
+  const hasActive = data?.jobs.some((j) => j.status === 'queued' || j.status === 'processing')
+  useEffect(() => {
+    if (!hasActive) return
+    const ids = data.jobs.filter((j) => j.status === 'queued' || j.status === 'processing').map((j) => j.jobId)
+    const t = setInterval(async () => {
+      await Promise.all(ids.map((id) => fetch(`/status/${id}`).catch(() => null)))
+      load()
+    }, 4000)
+    return () => clearInterval(t)
+  }, [hasActive, data, load])
+
+  const handleClear = async () => {
+    if (!window.confirm('Delete all finished jobs and their images? Jobs still running are kept.')) return
+    setClearing(true)
+    try {
+      await clearHistory()
+      setPage(1)
+      await load()
+      refresh()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setClearing(false)
+    }
+  }
+
+  const selectClass =
+    'bg-white border border-outline-variant text-on-surface rounded-lg px-md py-sm font-body-sm text-body-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none'
+
+  const filtersActive = query || status || days
 
   return (
-    <main className="flex-grow w-full max-w-container-max mx-auto px-lg py-xl">
-      {/* Page header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-xl gap-md">
+    <main className="flex-grow w-full max-w-container-max mx-auto px-md md:px-lg py-xl">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-lg gap-md">
         <div>
-          <h1 className="font-display-lg text-display-lg text-on-surface mb-xs">Job History</h1>
+          <h1 className="font-display-lg text-[40px] md:text-display-lg text-on-surface mb-xs">Job history</h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-            Monitor and manage your neural upscaling pipeline. Processing logs are retained for 30
-            days.
+            Every image you&apos;ve enhanced. Open a job to compare, download or delete it.
           </p>
         </div>
-        <button className="flex items-center gap-xs px-md py-sm border border-secondary text-secondary rounded-xl font-bold hover:bg-secondary/10 transition-all duration-300 self-start md:self-auto">
-          <span className="material-symbols-outlined text-[20px]">delete_sweep</span>
-          <span className="font-body-md text-body-md">Clear history</span>
-        </button>
+        <div className="flex flex-col gap-sm md:items-end">
+          <div className="w-full md:w-72">
+            <UsageMeter usage={usage} plan={plan} />
+          </div>
+          <button
+            onClick={handleClear}
+            disabled={clearing || !data?.total}
+            className="flex items-center gap-xs px-md py-sm border border-outline-variant text-on-surface-variant rounded-xl font-semibold hover:border-error hover:text-error transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="material-symbols-outlined text-[20px]">delete_sweep</span>
+            <span className="font-body-sm text-body-sm">{clearing ? 'Clearing…' : 'Clear history'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Filter bar */}
-      <div className="glass-panel p-md rounded-xl mb-lg flex flex-col md:flex-row gap-md items-center border border-outline-variant/30">
+      <div className="glass-panel p-md rounded-xl mb-lg flex flex-col md:flex-row gap-md items-center">
         <div className="relative w-full md:w-96">
-          <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">
+          <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">
             search
           </span>
           <input
-            type="text"
+            type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by file name or ID..."
-            className="w-full pl-xl pr-md py-sm bg-background border border-outline-variant rounded-lg focus:ring-1 focus:ring-secondary focus:border-secondary transition-all outline-none font-body-sm text-body-sm text-on-surface"
+            placeholder="Search by file name or job ID…"
+            className="w-full pl-10 pr-md py-sm bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all outline-none font-body-sm text-body-sm text-on-surface"
           />
         </div>
         <div className="flex gap-sm w-full md:w-auto">
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-background border border-outline-variant text-on-surface rounded-lg px-md py-sm font-body-sm text-body-sm focus:ring-1 focus:ring-secondary outline-none"
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value)
+              setPage(1)
+            }}
+            className={selectClass}
+            aria-label="Filter by status"
           >
-            <option>All Statuses</option>
-            <option>Completed</option>
-            <option>Processing</option>
-            <option>Failed</option>
+            {STATUS_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
           </select>
           <select
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="bg-background border border-outline-variant text-on-surface rounded-lg px-md py-sm font-body-sm text-body-sm focus:ring-1 focus:ring-secondary outline-none"
+            value={days}
+            onChange={(e) => {
+              setDays(e.target.value)
+              setPage(1)
+            }}
+            className={selectClass}
+            aria-label="Filter by date"
           >
-            <option>Last 7 days</option>
-            <option>Last 30 days</option>
-            <option>Specific Range</option>
+            {DATE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
           </select>
         </div>
-      </div>
-
-      {/* Job grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md">
-        {filtered.map((job) => (
-          <JobCard key={job.key} job={job} />
-        ))}
-      </div>
-
-      {/* Pagination */}
-      <div className="mt-xl flex justify-center items-center gap-sm">
-        <button className="p-xs rounded-lg border border-outline-variant hover:border-secondary transition-all text-on-surface-variant hover:text-secondary">
-          <span className="material-symbols-outlined">chevron_left</span>
-        </button>
-        <div className="flex gap-xs">
-          {[1, 2, 3].map((n) => (
-            <button
-              key={n}
-              className={
-                n === 1
-                  ? 'w-10 h-10 rounded-lg bg-secondary text-on-secondary font-bold font-body-md'
-                  : 'w-10 h-10 rounded-lg border border-outline-variant text-on-surface-variant hover:border-secondary transition-all font-body-md'
-              }
-            >
-              {n}
-            </button>
-          ))}
-          <span className="w-10 h-10 flex items-center justify-center text-on-surface-variant">
-            ...
+        {data && (
+          <span className="md:ml-auto font-body-sm text-body-sm text-on-surface-variant">
+            {data.total} job{data.total === 1 ? '' : 's'}
           </span>
-          <button className="w-10 h-10 rounded-lg border border-outline-variant text-on-surface-variant hover:border-secondary transition-all font-body-md">
-            12
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-md p-md rounded-lg bg-error-container border border-error/40 text-error font-body-sm text-body-sm">
+          {error}
+        </div>
+      )}
+
+      {!data && !error && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="glass-panel rounded-xl h-64 animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {data && data.jobs.length === 0 && (
+        <div className="glass-panel rounded-xl p-xl text-center">
+          <span className="material-symbols-outlined text-5xl text-primary mb-sm">
+            {filtersActive ? 'filter_alt_off' : 'photo_library'}
+          </span>
+          <h2 className="font-headline-sm text-headline-sm mb-xs">
+            {filtersActive ? 'No jobs match these filters' : 'No jobs yet'}
+          </h2>
+          <p className="text-on-surface-variant mb-md">
+            {filtersActive ? 'Try a different search or date range.' : 'Enhance your first image and it will show up here.'}
+          </p>
+          {!filtersActive && (
+            <Link to="/" className="inline-flex px-lg py-sm rounded-xl btn-gradient font-semibold">
+              Enhance an image
+            </Link>
+          )}
+        </div>
+      )}
+
+      {data && data.jobs.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-md">
+          {data.jobs.map((job) => (
+            <JobCard key={job.jobId} job={job} />
+          ))}
+        </div>
+      )}
+
+      {data && data.pages > 1 && (
+        <div className="mt-xl flex justify-center items-center gap-sm">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="p-xs rounded-lg border border-outline-variant hover:border-primary text-on-surface-variant hover:text-primary disabled:opacity-40"
+            aria-label="Previous page"
+          >
+            <span className="material-symbols-outlined">chevron_left</span>
+          </button>
+          <span className="font-body-sm text-body-sm text-on-surface-variant px-sm">
+            Page {data.page} of {data.pages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(data.pages, p + 1))}
+            disabled={page >= data.pages}
+            className="p-xs rounded-lg border border-outline-variant hover:border-primary text-on-surface-variant hover:text-primary disabled:opacity-40"
+            aria-label="Next page"
+          >
+            <span className="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
-        <button className="p-xs rounded-lg border border-outline-variant hover:border-secondary transition-all text-on-surface-variant hover:text-secondary">
-          <span className="material-symbols-outlined">chevron_right</span>
-        </button>
-      </div>
+      )}
     </main>
   )
 }

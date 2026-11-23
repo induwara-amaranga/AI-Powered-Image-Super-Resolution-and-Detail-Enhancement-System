@@ -50,7 +50,7 @@ export default function BeforeAfterSlider({
   return (
     <div
       ref={containerRef}
-      className="relative aspect-video rounded-xl overflow-hidden bg-surface-container-lowest border border-outline-variant/30 glow-border group select-none"
+      className="relative aspect-video rounded-xl overflow-hidden bg-surface-container glow-border group select-none"
     >
       {afterSrc ? (
         <img
@@ -88,7 +88,7 @@ export default function BeforeAfterSlider({
       )}
 
       {afterSrc && (
-        <div className="absolute top-md right-md px-sm py-xs bg-primary/20 backdrop-blur-sm rounded font-label-xs text-label-xs text-primary uppercase tracking-widest border border-primary/30 z-20">
+        <div className="absolute top-md right-md px-sm py-xs bg-primary rounded font-label-xs text-label-xs text-white uppercase tracking-widest shadow z-20">
           After
         </div>
       )}
@@ -102,7 +102,7 @@ export default function BeforeAfterSlider({
             type="button"
             onMouseDown={() => setIsDragging(true)}
             onTouchStart={() => setIsDragging(true)}
-            className="w-10 h-10 rounded-full bg-surface-container-high border-2 border-primary flex items-center justify-center shadow-xl cursor-ew-resize hover:scale-110 transition-transform"
+            className="w-10 h-10 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-xl cursor-ew-resize hover:scale-110 transition-transform"
             aria-label="Drag to compare"
           >
             <span className="material-symbols-outlined text-primary rotate-90">
@@ -113,7 +113,7 @@ export default function BeforeAfterSlider({
       )}
 
       {isProcessing && (
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-secondary/10 to-transparent h-1 w-full scanline z-40 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/30 to-transparent h-1 w-full scanline z-40 pointer-events-none" />
       )}
     </div>
   )

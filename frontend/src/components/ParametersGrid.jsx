@@ -11,7 +11,7 @@ export default function ParametersGrid({ params }) {
       {FIELDS.map((f) => (
         <div
           key={f.key}
-          className="p-md bg-surface-container rounded-lg border border-outline-variant/20"
+          className="p-md bg-white rounded-lg border border-outline-variant/60 shadow-sm"
         >
           <span className="font-label-xs text-label-xs text-on-surface-variant block mb-base uppercase opacity-70">
             {f.label}

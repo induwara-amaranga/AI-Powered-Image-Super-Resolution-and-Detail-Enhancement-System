@@ -6,7 +6,7 @@ function Step({ label, state, progress, hint }) {
   const dotClass = isDone
     ? 'bg-secondary'
     : isActive
-    ? 'bg-primary animate-pulse shadow-[0_0_10px_rgba(202,190,255,0.5)]'
+    ? 'bg-primary animate-pulse shadow-[0_0_0_4px_rgba(99,102,241,0.2)]'
     : isError
     ? 'bg-error'
     : 'bg-surface-container-high border border-outline-variant/40'
@@ -68,7 +68,7 @@ function Step({ label, state, progress, hint }) {
 
 export default function StatusTimeline({ stages }) {
   return (
-    <section className="bg-surface-container-low rounded-xl p-lg border border-outline-variant/20">
+    <section className="glass-panel rounded-xl p-lg">
       <h3 className="font-headline-sm text-headline-sm mb-lg flex items-center gap-sm">
         <span className="material-symbols-outlined text-primary">analytics</span>
         System Status

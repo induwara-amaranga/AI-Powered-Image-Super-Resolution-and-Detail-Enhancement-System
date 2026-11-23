@@ -1,40 +1,18 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+import { apiFetch } from './http.js'
 
-export async function signInUser(email, password) {
-  const response = await fetch(`${API_BASE_URL}/auth/signin`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password }),
-  })
+export const signInUser = (email, password, remember = true) =>
+  apiFetch('/api/auth/signin', { method: 'POST', body: { email, password, remember } })
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.detail || 'Sign in failed')
-  }
+export const signUpUser = (name, email, password) =>
+  apiFetch('/api/auth/signup', { method: 'POST', body: { name, email, password } })
 
-  return response.json()
-}
+export const fetchMe = () => apiFetch('/api/auth/me')
 
-export async function signUpUser(name, email, password) {
-  const response = await fetch(`${API_BASE_URL}/auth/signup`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ name, email, password }),
-  })
+export const updateProfile = (name) => apiFetch('/api/auth/me', { method: 'PATCH', body: { name } })
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.detail || 'Sign up failed')
-  }
+export const changePassword = (currentPassword, newPassword) =>
+  apiFetch('/api/auth/password', { method: 'POST', body: { currentPassword, newPassword } })
 
-  return response.json()
-}
+export const createApiKey = () => apiFetch('/api/auth/api-key', { method: 'POST' })
 
-export async function signOutUser() {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-}
+export const revokeApiKey = () => apiFetch('/api/auth/api-key', { method: 'DELETE' })
